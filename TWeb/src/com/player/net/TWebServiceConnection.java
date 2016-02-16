@@ -11,15 +11,19 @@ import org.xlightweb.client.HttpClient;
 import sun.nio.cs.ext.MSISO2022JP;
 
 import com.player.net.type.ServiceError;
+import com.player.sender.ServiceCallBack;
 import com.player.util.TWebLogUtil;
 import com.sun.org.glassfish.external.statistics.annotations.Reset;
 
+/**
+ * 用于发送服务的长连接，针对"发送请求->接收响应"的网络交互过程
+ * 连接发送请求后必须等待服务响应或出现错误，才能再次发送请求 
+ */
 public class TWebServiceConnection extends TWebSocketConnection {
 	private volatile boolean mIsBusy = false;
 	private Timer mWaitTimer = new Timer(true);
 	private TimerTask mWaitTask = null;
-	
-	private ServiceCallBack mServiceCallBack = null;
+	private ConnectionCallBack mConnectionCallBack = null;
 	
 	protected TWebServiceConnection(HttpClient client) {
 		super(client);
@@ -61,38 +65,44 @@ public class TWebServiceConnection extends TWebSocketConnection {
 		}
 	}
 	
+	synchronized public void cancel() {
+		onServiceBack(null, ServiceError.ServiceCanceled);
+	}
+	
 	synchronized private void onServiceBack(IWebSocketConnection connection, ServiceError error) {
+		if(!isBusy()) {
+			return ; //服务已经结束
+		}
+		
 		mIsBusy = false;
 		if(mWaitTask != null) {
 			mWaitTask.cancel();
 		}
+		String responseMsg = null;
+		ServiceError serviceError = ServiceError.Null;
 		if(error == null || error == ServiceError.Null) {
-			TextMessage msgText = null;
 			try {
-				msgText = connection.readTextMessage();
+				TextMessage textMsg = connection.readTextMessage();
+				responseMsg = textMsg.toString();
 			} catch (IOException e) {
 				TWebLogUtil.d(e);
-				if(mServiceCallBack != null) {
-					mServiceCallBack.onServiceFail(ServiceError.ServiceResponseFailed);
-				}
-			}
-			if(msgText != null && mServiceCallBack != null) {
-				mServiceCallBack.onServiceSucceed(msgText.toString());	
+				serviceError = ServiceError.ServiceResponseFailed;
 			}
 		} else {
-			if(mServiceCallBack != null) {
-				mServiceCallBack.onServiceFail(ServiceError.ServiceTimeout);
-			}
-			disconnect();
+			serviceError = error;
+		}
+		
+		if(mConnectionCallBack != null) {
+			mConnectionCallBack.onServiceBack(responseMsg, serviceError);
 		}
 	}
-	
-	public void setServiceCallBack(ServiceCallBack callback) {
-		mServiceCallBack = callback;
-	}	
+		
+	public void setConnectionCallBack(ConnectionCallBack callback) {
+		mConnectionCallBack = callback;
+	}
 	
 	/**
-	 * 判断一个连接是否正被占用 
+	 * 判断一个连接是否正等待接收数据
 	 */
 	public boolean isBusy() {
 		return mIsBusy;

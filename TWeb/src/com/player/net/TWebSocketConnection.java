@@ -17,7 +17,7 @@ public class TWebSocketConnection {
 	private volatile boolean mIsAlive = false;
 	private IWebSocketConnection mConnection = null;
 	private HttpClient mClient = null;
-	private long mServiceTimeoutMillis = 40000;
+	private long mServiceTimeoutMillis = 10000;
 	
 	protected TWebSocketConnection(HttpClient client){
 		mClient = client;
@@ -42,7 +42,6 @@ public class TWebSocketConnection {
 				}
 				@Override
 				public void onConnect(IWebSocketConnection curConnection) throws IOException {
-					mIsAlive = true;
 					TWebSocketConnection.this.onConnect(curConnection);
 				}
 			});
@@ -51,9 +50,12 @@ public class TWebSocketConnection {
 				// timeout
 				onConnectTimeout();
 			}
+			mConnection = null;
 			TWebLogUtil.d(e);
 		}
-
+		if(mConnection != null) {
+			mIsAlive = true;
+		}
 	}
 
 	public boolean isAlive() {

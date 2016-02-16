@@ -320,7 +320,13 @@ public class TDataUtil {
 		return res;
 	}
 	
-	public static Object deserialize(String json, Class<?> cls) {
+	/**
+	 * 将JSON转化成一个类的实例
+	 * @param json
+	 * @param cls 生成实例的类
+	 * @return null:反序列化失败
+	 */
+	public static @Nullable Object deserialize(String json, Class<?> cls) {
 		if(json == null || json.isEmpty() || cls == null) {
 			return null;
 		}
