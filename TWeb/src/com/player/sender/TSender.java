@@ -1,18 +1,24 @@
 package com.player.sender;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import sun.swing.StringUIClientPropertyKey;
+
+import com.player.common.StringUtil;
+import com.player.common.TDataUtil;
 import com.player.net.ConnectionCallBack;
 import com.player.net.TConnectionPool;
 import com.player.net.TWebServiceConnection;
 import com.player.net.model.ResponseBean;
 import com.player.net.type.ServiceError;
-import com.player.util.TDataUtil;
+import com.player.security.TCrypto;
+import com.player.util.TWebLogUtil;
 
 
-public class TSender {
+public class TSender {	
 	private static HashMap<Long, ServiceTask> mServiceMap = new HashMap<Long, ServiceTask>();
 	static private void addServiceTask(ServiceTask task) {
 		synchronized (mServiceMap) {
@@ -53,17 +59,33 @@ public class TSender {
 					public void onServiceBack(String responseMsg, ServiceError error) {
 						removeServiceTask(task.getId());
 						TConnectionPool.getInstance().returnWebServiceConnection(connection);
+						
 						if(task.callBack != null) {
+							ResponseBean responseBean = null;
 							if(error == null || error == ServiceError.Null) {
-								ResponseBean response = null;
-								if(task.responseClass != null) {
-									response = (ResponseBean)TDataUtil.deserialize(responseMsg, task.responseClass);
+								String deciphered = "";
+								try{
+									deciphered = TCrypto.decrypt(responseMsg, Charset.forName("UTF-8"));
+								} catch(Exception e) {
+									TWebLogUtil.d(e);
 								}
-								task.callBack.onServiceSucceed(response);
+								if(!StringUtil.emptyOrNull(deciphered)) {
+									TWebLogUtil.showResponse(deciphered);
+									responseBean = (ResponseBean)TDataUtil.deserialize(deciphered, task.responseClass);
+									if(responseBean == null) {
+										error = ServiceError.DeserializeFailed;
+									}
+								} else {
+									error = ServiceError.DecipherFailed;
+								}
+							}
+							if(error == null || error == ServiceError.Null) {
+								task.callBack.onServiceSucceed(responseBean);
 							} else {
 								task.callBack.onServiceFail(error);
 							}
 						}
+						
 					}
 				});
 				task.start(connection);

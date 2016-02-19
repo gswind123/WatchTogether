@@ -1,8 +1,11 @@
 package com.player.sender;
 
+import java.nio.charset.Charset;
+
+import com.player.common.TDataUtil;
 import com.player.net.TWebServiceConnection;
 import com.player.net.model.RequestBean;
-import com.player.util.TDataUtil;
+import com.player.security.TCrypto;
 import com.player.util.TWebLogUtil;
 
 public class ServiceTask {
@@ -26,7 +29,8 @@ public class ServiceTask {
 	
 	public void start(TWebServiceConnection connection) {
 		mConnection = connection;
-		String msgText = TDataUtil.serialize(request);
+		String msgText = TCrypto.encrypt(
+				TDataUtil.serialize(request), Charset.forName("UTF-8"));
 		try{
 			connection.send(msgText);
 		}catch(Exception e) {

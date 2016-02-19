@@ -17,4 +17,8 @@ public class TWebLogUtil {
 	static public void v(String msg){
 		System.out.println("web_verbose:\t"+msg);
 	}
+	
+	static public void showResponse(String response) {
+		System.out.println("web_response:\t"+response);
+	}
 }

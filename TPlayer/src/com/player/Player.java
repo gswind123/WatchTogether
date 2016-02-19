@@ -39,8 +39,8 @@ import javax.swing.event.ChangeListener;
 import sun.swing.StringUIClientPropertyKey;
 import net.miginfocom.swing.MigLayout;
 
+import com.player.common.StringUtil;
 import com.player.live.TLiveWindow;
-import com.player.util.StringUtil;
 import com.player.widget.PlayerProgressBar;
 import com.player.widget.VideoPanel;
 
