@@ -1,32 +1,34 @@
-const TCrypto = require("./TCommon/security/tcrypto");
+const TProxy = require("./TServer/TProxy");
 const Http = require("http");
+const TCrypto = require("./TCommon/security/TCrypto");
 const WebSocketServer = require("ws").Server;
 
 var httpServer = Http.createServer();
 var webSocketServer = new WebSocketServer({"server":httpServer});
 webSocketServer.on("connection", function(connection){
-    connection.on("message", function(data){
-        TCrypto.decipher(data, function(request) {
-            var requestBean = null;
-            try{
-                requestBean = JSON.parse(request);
-            } catch(e) {
-                console.log(e);
+    connection.on("message", function(request){
+        var requestEntity = null;
+        try{
+            requestEntity = JSON.parse(request);
+        } catch(e) {}
+        TProxy.execService(requestEntity, function(responseBean, errorMessage) {
+            var responseEntity = {
+                result : errorMessage.result,
+                resultMessage : errorMessage.resultMessage,
+                serviceCode : requestEntity.serviceCode
+            };
+            function onResponseEntity(responseEntity) {
+                connection.send(JSON.stringify(responseEntity));
             }
-            if(requestBean) {
-                console.log(requestBean.userMessage);
-                try{
-                    var response = {
-                        "serverMessage":"对你说一句，只是说一句"
-                    };
-                    TCrypto.cipher(JSON.stringify(response), function(data){
-                        connection.send(data);
-                    });
-                }catch(e) {
-                    console.log(e);
-                }
+            if(responseBean) {
+                TCrypto.cipher(JSON.stringify(responseBean), function(ciphered) {
+                    responseEntity.responseBean = ciphered;
+                    onResponseEntity(responseEntity);
+                });
+            } else {
+                onResponseEntity(responseEntity);
             }
-        })
+        });
     });
 });
 httpServer.listen(18080);

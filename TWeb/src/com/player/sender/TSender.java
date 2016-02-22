@@ -13,6 +13,7 @@ import com.player.net.ConnectionCallBack;
 import com.player.net.TConnectionPool;
 import com.player.net.TWebServiceConnection;
 import com.player.net.model.ResponseBean;
+import com.player.net.model.ResponseEntity;
 import com.player.net.type.ServiceError;
 import com.player.security.TCrypto;
 import com.player.util.TWebLogUtil;
@@ -60,32 +61,49 @@ public class TSender {
 						removeServiceTask(task.getId());
 						TConnectionPool.getInstance().returnWebServiceConnection(connection);
 						
-						if(task.callBack != null) {
-							ResponseBean responseBean = null;
-							if(error == null || error == ServiceError.Null) {
-								String deciphered = "";
-								try{
-									deciphered = TCrypto.decrypt(responseMsg, Charset.forName("UTF-8"));
-								} catch(Exception e) {
-									TWebLogUtil.d(e);
-								}
-								if(!StringUtil.emptyOrNull(deciphered)) {
-									TWebLogUtil.showResponse(deciphered);
-									responseBean = (ResponseBean)TDataUtil.deserialize(deciphered, task.responseClass);
-									if(responseBean == null) {
-										error = ServiceError.DeserializeFailed;
-									}
-								} else {
-									error = ServiceError.DecipherFailed;
-								}
+						ResponseBean responseBean = null;
+						do{ //while false
+							if(task.callBack == null){
+								break;
 							}
+							if(error != null && error != ServiceError.Null) {
+								break;
+							}
+							ResponseEntity responseEntity = (ResponseEntity)TDataUtil.deserialize(responseMsg, ResponseEntity.class);
+							if(responseEntity == null) {
+								error = ServiceError.DeserializeFailed;
+								break;
+							}
+							//获取服务端错误
+							error = ServiceError.getServiceErrorByResult(responseEntity.result);
+							if(error != ServiceError.Null) {
+								break;
+							}
+							String deciphered = "";
+							try{
+								deciphered = TCrypto.decrypt(responseEntity.responseBean, Charset.forName("UTF-8"));
+							} catch(Exception e) {
+								TWebLogUtil.d(e);
+							}
+							if(StringUtil.emptyOrNull(deciphered)) {
+								error = ServiceError.DecipherFailed;
+								break;
+							}
+							responseBean = (ResponseBean)TDataUtil.deserialize(deciphered, task.responseClass);
+							if(responseBean == null) {
+								error = ServiceError.DeserializeFailed;
+								break;
+							}
+						}while(false);
+						
+						
+						if(task.callBack != null) {
 							if(error == null || error == ServiceError.Null) {
 								task.callBack.onServiceSucceed(responseBean);
 							} else {
 								task.callBack.onServiceFail(error);
 							}
 						}
-						
 					}
 				});
 				task.start(connection);

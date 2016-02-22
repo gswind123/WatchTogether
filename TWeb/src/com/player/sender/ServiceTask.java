@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import com.player.common.TDataUtil;
 import com.player.net.TWebServiceConnection;
 import com.player.net.model.RequestBean;
+import com.player.net.model.RequestEntity;
 import com.player.security.TCrypto;
 import com.player.util.TWebLogUtil;
 
@@ -13,6 +14,7 @@ public class ServiceTask {
 	private TWebServiceConnection mConnection = null;
 	private volatile boolean mIsCanceled = false;
 	
+	public String serviceCode = "";
 	public RequestBean request = null;
 	public Class<?> responseClass = null;
 	public ServiceCallBack callBack = null;
@@ -29,10 +31,16 @@ public class ServiceTask {
 	
 	public void start(TWebServiceConnection connection) {
 		mConnection = connection;
-		String msgText = TCrypto.encrypt(
+		RequestEntity requestEntity = new RequestEntity();
+		String beanText = TCrypto.encrypt(
 				TDataUtil.serialize(request), Charset.forName("UTF-8"));
+		
+		requestEntity.requestBean = beanText;
+		requestEntity.serviceCode  =serviceCode;
+		String entityText = TDataUtil.serialize(requestEntity);
+		
 		try{
-			connection.send(msgText);
+			connection.send(entityText);
 		}catch(Exception e) {
 			TWebLogUtil.d(e);
 		}

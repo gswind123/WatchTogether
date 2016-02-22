@@ -7,6 +7,9 @@ const BlockSize = 8;
 var textCharset = "utf-8";
 
 function addPadding(rawData) {
+    if(!rawData) {
+        return "";
+    }
     var buffer = new Buffer(rawData, textCharset);
     var paddingNum = BlockSize - (buffer.byteLength%BlockSize);
     if(paddingNum == 0) {
@@ -46,7 +49,11 @@ TCrypto.cipher = function(plainText, callback) {
         callback(ciphered);
     });
     plainText = addPadding(plainText);
-    cipher.write(plainText, textCharset);
+    try{
+        cipher.write(plainText, textCharset);
+    }catch(e){
+        callback("")
+    }
     cipher.end();
 };
 
@@ -64,7 +71,11 @@ TCrypto.decipher = function(cipherCode, callback) {
         deciphered = stripPadding(deciphered);
         callback(deciphered);
     });
-    decipher.write(cipherCode, "hex");
+    try{
+        decipher.write(cipherCode, "hex");
+    } catch(e) {
+        callback("");
+    }
     decipher.end();
 };
 
