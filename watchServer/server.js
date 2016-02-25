@@ -16,7 +16,7 @@ webSocketServer.on("connection", function(connection){
                 return ;
             }
             if(requestEntity.serviceType === ServiceType.TaskService) {
-                TProxy.execService(requestEntity, function(responseBean, errorMessage) {
+                TProxy.execTaskService(requestEntity, function(responseBean, errorMessage) {
                     responseEntity = new ResponseEntity(requestEntity.serviceType, requestEntity.serviceCode,
                         errorMessage.result, responseBean);
                     responseEntity.parseResponse(function(responseSeq) {
@@ -25,8 +25,15 @@ webSocketServer.on("connection", function(connection){
                         }catch(e){}
                     });
                 });
+            } else if(requestEntity.serviceType === ServiceType.CommunicationService) {
+                TProxy.execCommunicationService(requestEntity, connection);
             }
         });
+    });
+    connection.on("close", function() {
+        if(connection.disconnectCallBack) {
+            connection.disconnectCallBack();
+        }
     });
 });
 httpServer.listen(18080);

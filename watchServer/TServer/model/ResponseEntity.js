@@ -22,7 +22,6 @@ ResponseEntity.prototype.parseResponse = function(outputCallBack) {
     var headBuffer = new Buffer(this.serviceType+" "+this.serviceCode+" "+this.serviceError+" ");
     var bodyBuffer = new Buffer(beanSeq);
     var uncipherSeq = Buffer.concat([headBuffer, bodyBuffer]).toString();
-    console.log("uncipherSeq:"+uncipherSeq);
     TCrypto.cipher(uncipherSeq.toString(), function(ciphered){
         outputCallBack(ciphered);
     });

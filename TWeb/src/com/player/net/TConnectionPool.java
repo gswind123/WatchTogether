@@ -38,7 +38,7 @@ public class TConnectionPool {
 		mConnectionLatch = new Semaphore(MaxConnectionCount, true);
 	}
 
-	private HashSet<TWebServiceConnection> mServiceSet = new HashSet<TWebServiceConnection>(); 
+	private HashSet<TWebServiceConnection> mServiceSet = new HashSet<TWebServiceConnection>();
 	
 	/**
 	 * 获取一个存活的ServiceConnection

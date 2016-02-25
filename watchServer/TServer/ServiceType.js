@@ -1,6 +1,6 @@
 const ServiceType = {
     TaskService : 1,
-    ConnectionService : 2
+    CommunicationService : 2
 };
 
 module.exports = ServiceType;

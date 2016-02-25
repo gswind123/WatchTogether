@@ -1,9 +1,11 @@
 const TCrypto = require("../../TCommon/security/TCrypto");
 const ServiceError = require("../ServiceError");
+const ServiceType = require("../ServiceType");
 
 function RequestEntity() {
     this.serviceType = 0;
     this.serviceCode = "";
+    this.requestBody = "";
     this.requestBean = {};
 }
 
@@ -34,18 +36,33 @@ RequestEntity.parseRequest = function(cipherRequest, outputCallBack) {
                 spaceCtr++;
             }
         }
-        var beanObj = null;
         try{
             type = parseInt(type);
-            beanObj = JSON.parse(beanSeq);
         }catch(e){}
-        if(!type || !code || !beanObj) {
+
+        var requestBodyValid = false;
+        entity.requestBody = beanSeq;
+        if(type === ServiceType.TaskService) {
+            var beanObj;
+            try{
+                beanObj = JSON.parse(beanSeq);
+            }catch(e){}
+            if(beanObj) {
+                entity.requestBean = beanObj;
+                requestBodyValid = true;
+            }
+        } else if(type === ServiceType.ConnectionService){
+            if(beanSeq) {
+                requestBodyValid = true;
+            }
+        }
+
+        if(!type || !code || !requestBodyValid) {
             outputCallBack(null, ServiceError.InvalidRequest);
             return ;
         }
         entity.serviceType = type;
         entity.serviceCode = code;
-        entity.requestBean = beanObj;
         outputCallBack(entity, ServiceError.Null);
     });
 };

@@ -5,16 +5,16 @@ const Util = require("util");
 /**
  * Override #onReceive to deal with request
  */
-function TService() {
+function TTaskService() {
     Events.EventEmitter.call(this);
 }
-Util.inherits(TService, Events.EventEmitter);
+Util.inherits(TTaskService, Events.EventEmitter);
 
-TService.prototype.onReceive = function(requestBean, outputCallBack){
+TTaskService.prototype.onReceive = function(requestBean, outputCallBack){
     outputCallBack(null, ServiceError.Null);
 };
 
-TService.prototype.receive = function(requestBean) {
+TTaskService.prototype.receive = function(requestBean) {
     var self = this;
     if(self.onReceive) {
         try{
@@ -32,4 +32,4 @@ TService.prototype.receive = function(requestBean) {
         }
     }
 };
-module.exports = TService;
+module.exports = TTaskService;

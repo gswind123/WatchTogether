@@ -9,11 +9,11 @@ const ServiceMap = {
 };
 
 /**
- * Routing and execute a service
+ * Routing and execute a task service
  * @param requestBean Must have a serviceCode
  * @param callBack Called when the service returns : callBack(responseBean, errorMsg).
  */
-TProxy.execService = function(requestEntity, callBack) {
+TProxy.execTaskService = function(requestEntity, callBack) {
     var error = 0;
     var service = null;
     do{
@@ -44,6 +44,28 @@ TProxy.execService = function(requestEntity, callBack) {
     } else {
         service.receive(requestEntity.requestBean);
     }
+};
+
+/**
+ * Routing and execute a communication service
+ * @param requestEntity
+ * @param connection The current using connection
+ */
+TProxy.execCommunicationService = function(requestEntity, connection) {
+    var error = 0;
+    do{ //while false
+        if(!(requestEntity && requestEntity.serviceCode)) {
+            error = ServiceError.InvalidServiceCode;
+            break;
+        }
+        var comm = CommunicationManager.get(requestEntity.serviceCode);
+        if(!comm) {
+            error = ServiceError.ServiceNotFount;
+            break;
+        }
+        comm.updateConnection(connection);
+        comm.receive(requestEntity.requestBody);
+    }while(false);
 };
 
 module.exports = TProxy;

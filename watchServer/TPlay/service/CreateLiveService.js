@@ -1,5 +1,5 @@
 const Util = require("util");
-const TService = require("../../TServer/TService");
+const TTaskService = require("../../TServer/TTaskService");
 const CreateLiveResponseBean = require("./model/CreateLiveResponseBean");
 const LiveHouseModel = require("../business/model/LiveHouseModel");
 const AudienceModel = require("../business/model/AudienceModel");
@@ -9,7 +9,7 @@ const LiveHouseManager = require("../business/LiveHouseManager");
 function CreateLiveService() {
     TService.call(this);
 }
-Util.inherits(CreateLiveService, TService);
+Util.inherits(CreateLiveService, TTaskService);
 
 CreateLiveService.prototype.onReceive = function(requestBean, outputCallBack) {
     var responeBean = new CreateLiveResponseBean();

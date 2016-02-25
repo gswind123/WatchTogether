@@ -2,7 +2,7 @@ package com.player.net.type;
 
 public enum ServiceType {
 	TaskService(1, "TaskService"),
-	ConnectionService(2, "ConnectionService");
+	CommunicationService(2, "CommunicationService");
 	
 	private int mValue;
 	private String mDesc;
