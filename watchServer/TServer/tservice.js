@@ -10,15 +10,25 @@ function TService() {
 }
 Util.inherits(TService, Events.EventEmitter);
 
+TService.prototype.onReceive = function(requestBean, outputCallBack){
+    outputCallBack(null, ServiceError.Null);
+};
+
 TService.prototype.receive = function(requestBean) {
     var self = this;
     if(self.onReceive) {
         try{
-            self.onReceive(requestBean, function(responseBean) {
-                self.emit("finish", responseBean, {result:0});
+            self.onReceive(requestBean, function(responseBean, serviceError) {
+                var errorMessage = {
+                    result : 0
+                };
+                if(serviceError) {
+                    errorMessage.result = serviceError;
+                }
+                self.emit("finish", responseBean, errorMessage);
             });
         } catch(e) {
-            self.emit({}, {result:ServiceError.ServerRuntimeError});
+            self.emit("finish", null, {result:ServiceError.ServerRuntimeError});
         }
     }
 };

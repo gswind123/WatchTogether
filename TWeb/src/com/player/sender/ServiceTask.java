@@ -6,6 +6,8 @@ import com.player.common.TDataUtil;
 import com.player.net.TWebServiceConnection;
 import com.player.net.model.RequestBean;
 import com.player.net.model.RequestEntity;
+import com.player.net.model.ResponseBean;
+import com.player.net.type.ServiceType;
 import com.player.security.TCrypto;
 import com.player.util.TWebLogUtil;
 
@@ -16,7 +18,7 @@ public class ServiceTask {
 	
 	public String serviceCode = "";
 	public RequestBean request = null;
-	public Class<?> responseClass = null;
+	public Class<? extends ResponseBean> responseClass = null;
 	public ServiceCallBack callBack = null;
 	
 	public ServiceTask() {
@@ -31,16 +33,14 @@ public class ServiceTask {
 	
 	public void start(TWebServiceConnection connection) {
 		mConnection = connection;
-		RequestEntity requestEntity = new RequestEntity();
-		String beanText = TCrypto.encrypt(
-				TDataUtil.serialize(request), Charset.forName("UTF-8"));
 		
-		requestEntity.requestBean = beanText;
-		requestEntity.serviceCode  =serviceCode;
-		String entityText = TDataUtil.serialize(requestEntity);
+		RequestEntity entity = new RequestEntity();
+		entity.serviceCode = serviceCode;
+		entity.requestBean = request;
+		String requestSeq = entity.parseRequestSeqence();
 		
 		try{
-			connection.send(entityText);
+			connection.send(requestSeq);
 		}catch(Exception e) {
 			TWebLogUtil.d(e);
 		}

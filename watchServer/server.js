@@ -1,36 +1,32 @@
-const TProxy = require("./TServer/TProxy");
 const Http = require("http");
-const TCrypto = require("./TCommon/security/TCrypto");
 const WebSocketServer = require("ws").Server;
+const TProxy = require("./TServer/TProxy");
+const RequestEntity = require("./TServer/model/RequestEntity");
+const ResponseEntity = require("./TServer/model/ResponseEntity");
+const ServiceError = require("./TServer/ServiceError");
+const ServiceType = require("./TServer/ServiceType");
 
 var httpServer = Http.createServer();
 var webSocketServer = new WebSocketServer({"server":httpServer});
 webSocketServer.on("connection", function(connection){
     connection.on("message", function(request){
-        var requestEntity = null;
-        try{
-            requestEntity = JSON.parse(request);
-        } catch(e) {}
-        TProxy.execService(requestEntity, function(responseBean, errorMessage) {
-            var responseEntity = {
-                result : errorMessage.result,
-                resultMessage : errorMessage.resultMessage,
-                serviceCode : requestEntity.serviceCode
-            };
-            function onResponseEntity(responseEntity) {
-                connection.send(JSON.stringify(responseEntity));
+        RequestEntity.parseRequest(request, function(requestEntity, serviceError){
+            if(!(!serviceError || serviceError === ServiceError.Null)) {
+                connection.close();
+                return ;
             }
-            if(responseBean) {
-                TCrypto.cipher(JSON.stringify(responseBean), function(ciphered) {
-                    responseEntity.responseBean = ciphered;
-                    onResponseEntity(responseEntity);
+            if(requestEntity.serviceType === ServiceType.TaskService) {
+                TProxy.execService(requestEntity, function(responseBean, errorMessage) {
+                    responseEntity = new ResponseEntity(requestEntity.serviceType, requestEntity.serviceCode,
+                        errorMessage.result, responseBean);
+                    responseEntity.parseResponse(function(responseSeq) {
+                        try{
+                            connection.send(responseSeq);
+                        }catch(e){}
+                    });
                 });
-            } else {
-                onResponseEntity(responseEntity);
             }
         });
     });
 });
 httpServer.listen(18080);
-
-

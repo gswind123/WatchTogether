@@ -14,7 +14,6 @@ const ServiceMap = {
  * @param callBack Called when the service returns : callBack(responseBean, errorMsg).
  */
 TProxy.execService = function(requestEntity, callBack) {
-    var received  =false;
     var error = 0;
     var service = null;
     do{
@@ -39,24 +38,12 @@ TProxy.execService = function(requestEntity, callBack) {
         service.on("finish", function(responseBean, errorMessage){
             callBack(responseBean, errorMessage);
         });
-        received = true;
     }while(false);
     if(error != 0) {
         callBack(null, {result:error});
-        return ;
+    } else {
+        service.receive(requestEntity.requestBean);
     }
-    TCrypto.decipher(requestEntity.requestBean, function(deciphered) {
-        var request = null;
-        try{
-            request = JSON.parse(deciphered);
-        }catch(e) {}
-        if(!request) {
-            error = ServiceError.DeserilizeFailed;
-            callBack(null, {result:error});
-        } else {
-            service.receive(request);
-        }
-    });
 };
 
 module.exports = TProxy;

@@ -222,7 +222,10 @@ public class TDataUtil {
 					try {
 						field.set(res, value);
 					} catch (IllegalArgumentException | IllegalAccessException e) {
-						TLogUtil.d(e);
+						StringBuilder errorBuilder = new StringBuilder("反序列化异常:");
+						errorBuilder.append("字段 ").append(field.getName())
+							.append("不支持赋值:").append(value.toString());
+						TLogUtil.d(errorBuilder.toString());
 					}
 				}
 			}

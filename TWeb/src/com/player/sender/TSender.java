@@ -61,45 +61,11 @@ public class TSender {
 						removeServiceTask(task.getId());
 						TConnectionPool.getInstance().returnWebServiceConnection(connection);
 						
-						ResponseBean responseBean = null;
-						do{ //while false
-							if(task.callBack == null){
-								break;
-							}
-							if(error != null && error != ServiceError.Null) {
-								break;
-							}
-							ResponseEntity responseEntity = (ResponseEntity)TDataUtil.deserialize(responseMsg, ResponseEntity.class);
-							if(responseEntity == null) {
-								error = ServiceError.DeserializeFailed;
-								break;
-							}
-							//获取服务端错误
-							error = ServiceError.getServiceErrorByResult(responseEntity.result);
-							if(error != ServiceError.Null) {
-								break;
-							}
-							String deciphered = "";
-							try{
-								deciphered = TCrypto.decrypt(responseEntity.responseBean, Charset.forName("UTF-8"));
-							} catch(Exception e) {
-								TWebLogUtil.d(e);
-							}
-							if(StringUtil.emptyOrNull(deciphered)) {
-								error = ServiceError.DecipherFailed;
-								break;
-							}
-							responseBean = (ResponseBean)TDataUtil.deserialize(deciphered, task.responseClass);
-							if(responseBean == null) {
-								error = ServiceError.DeserializeFailed;
-								break;
-							}
-						}while(false);
-						
-						
 						if(task.callBack != null) {
+							ResponseEntity entity = ResponseEntity.parseResponseEntity(responseMsg, error, task.responseClass);
+							error = entity.serviceError;
 							if(error == null || error == ServiceError.Null) {
-								task.callBack.onServiceSucceed(responseBean);
+								task.callBack.onServiceSucceed(entity.responseBean);
 							} else {
 								task.callBack.onServiceFail(error);
 							}

@@ -21,32 +21,32 @@ function addPadding(rawData) {
     }
     var paddingBuffer = Buffer.concat([buffer, paddings]);
     return paddingBuffer.toString(textCharset);
-};
+}
 function stripPadding(rawData) {
     if(!rawData) {
         return "";
     }
-    var buffer = new Buffer(rawData, textCharset);
+    var buffer = new Buffer(rawData);
     var paddingNum = buffer[buffer.byteLength - 1];
     if(paddingNum > BlockSize || paddingNum > buffer.byteLength) {
         return rawData;
     }
     var nonpadBuffer = buffer.slice(0, buffer.byteLength - paddingNum);
     return nonpadBuffer.toString(textCharset);
-};
+}
 
 TCrypto.cipher = function(plainText, callback) {
-    var ciphered = "";
+    var ciphered = new Array();
     var cipher = Crypto.createCipheriv(AlgorithmName, new Buffer(SecretKey), new Buffer(0));
     cipher.setAutoPadding(false);
     cipher.on("readable", function(){
         var data = cipher.read();
         if(data) {
-            ciphered += data.toString("hex");
+            ciphered.push(data);
         }
     });
     cipher.on("end", function() {
-        callback(ciphered);
+        callback(Buffer.concat(ciphered).toString("hex"));
     });
     plainText = addPadding(plainText);
     try{
@@ -58,18 +58,18 @@ TCrypto.cipher = function(plainText, callback) {
 };
 
 TCrypto.decipher = function(cipherCode, callback) {
-    var deciphered = "";
+    var deciphered = new Array();;
     var decipher = Crypto.createDecipheriv(AlgorithmName, new Buffer(SecretKey), new Buffer(0));
     decipher.setAutoPadding(false);
     decipher.on("readable", function(){
         var data = decipher.read();
         if(data) {
-            deciphered += data.toString(textCharset);
+            deciphered.push(data);
         }
     });
     decipher.on("end", function(){
-        deciphered = stripPadding(deciphered);
-        callback(deciphered);
+        var decipheredSeq = stripPadding(Buffer.concat(deciphered));
+        callback(decipheredSeq);
     });
     try{
         decipher.write(cipherCode, "hex");
