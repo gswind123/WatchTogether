@@ -1,10 +1,25 @@
+const Generator = require("../../../TCommon/util/Generator");
+const LiveState = require("../type/LiveState");
+
 function LiveHouseModel(name,fileSig) {
-    this._id = Date.now();
+    this._id = Generator.generateId();
     this._name = name;
     this._hostList = new Object();
     this._audienceList = new Object();
     this._fileSig = fileSig;
+    this._livePosMill = 0;
+    this._liveState = LiveState.Pause;
+    this._lastUpdateTime = Date.now();
 }
+LiveHouseModel.prototype.updateLive = function(curPos, curState) {
+    this._livePosMill = curPos;
+    if(curState == LiveState.Living) {
+        this._liveState = LiveState.Living;
+    } else if(curState == LiveState.Pause) {
+        this._liveState = LiveState.Pause;
+    }
+    this._lastUpdateTime = Date.now();
+};
 LiveHouseModel.prototype.addAudience = function(audience/*AudienceModel*/) {
     this._audienceList[audience._uid] = audience;
     audience._liveHouseId = this._id;

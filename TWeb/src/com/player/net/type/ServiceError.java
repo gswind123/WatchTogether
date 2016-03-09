@@ -11,7 +11,9 @@ public enum ServiceError {
 	ServiceNotExist(401, "服务不存在"),
 	ServiceDisconnected(401, "失去服务连接"),
 	ServiceTimeout(500, "服务超时"),
-	RequestMessageError(501, "请求报文格式不正确");
+	RequestMessageError(501, "请求报文格式不正确"),
+	ServerRuntimeError(502, "服务端内部错误"),
+	RequestIllegalArgument(503, "请求参数非法");
 	
 	private String mDesc = "";
 	private int mValue = 0;
@@ -31,6 +33,8 @@ public enum ServiceError {
 		case 2: return ServiceCodeError;
 		case 3: return ServiceNotExist;
 		case 4: return RequestMessageError;
+		case 5: return ServerRuntimeError;
+		case 6: return RequestIllegalArgument;
 		default:return Null;
 		}
 	}

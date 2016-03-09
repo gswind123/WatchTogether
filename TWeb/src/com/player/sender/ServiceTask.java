@@ -35,6 +35,7 @@ public class ServiceTask {
 		mConnection = connection;
 		
 		RequestEntity entity = new RequestEntity();
+		entity.serviceType = ServiceType.TaskService;
 		entity.serviceCode = serviceCode;
 		entity.requestBean = request;
 		String requestSeq = entity.parseRequestSeqence();

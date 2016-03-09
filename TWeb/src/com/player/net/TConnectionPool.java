@@ -1,6 +1,7 @@
 package com.player.net;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -88,7 +89,6 @@ public class TConnectionPool {
 		return requireWebServiceConnection(DefaultLatchTimeout);
 	}
 	
-	
 	/**
 	 * 将一个连接放回连接池
 	 * @param connection 放回连接池的连接
@@ -112,4 +112,17 @@ public class TConnectionPool {
 		connectionSet.removeAll(cleanAry);
 	}
 	
+	private HashMap<String, TWebCommConnection> mCommMap = new HashMap<String, TWebCommConnection>();
+	
+	/**
+	 * 申请一个交互长连接
+	 */
+	public TWebCommConnection requireCommConnection() {
+		TWebCommConnection connection = new TWebCommConnection(mClient);
+		return connection;
+	}
+	
+	public void returnCommConnection(TWebCommConnection connection) {
+		connection.disconnect();
+	}
 }

@@ -1,4 +1,4 @@
-package com.player.widget;
+package com.player.view.widget;
 
 import java.awt.Component;
 

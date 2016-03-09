@@ -1,11 +1,12 @@
 const Path = require("path");
-const TCrypto = require("../TCommon/security/TCrypto");
+TLogUtil = require("../TCommon/util/TLogUtil");
 const ServiceError = require("./ServiceError");
 const TProxy = {};
 const ProjectHome = __dirname.slice(0, -8);
 
 const ServiceMap = {
-    10000001 : "TPlay/service/CreateLiveService"
+    10000001 : "TPlay/service/CreateLiveService" ,
+    20000001 : "TPlay/service/StartLiveCommService"
 };
 
 /**
@@ -30,7 +31,9 @@ TProxy.execTaskService = function(requestEntity, callBack) {
         try{
             var ServiceType = require(servicePath);
             service = new ServiceType();
-        } catch(e) {}
+        } catch(e) {
+            TLogUtil.log(e);
+        }
         if(!service || !service.receive || !service.on) {
             error = ServiceError.ServiceNotFount;
             break;

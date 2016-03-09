@@ -2,6 +2,6 @@ package com.player.net;
 
 import com.player.net.type.ServiceError;
 
-public interface ConnectionCallBack {
+public interface TaskConnCallBack {
 	public void onServiceBack(String responseMsg, ServiceError error);
 }

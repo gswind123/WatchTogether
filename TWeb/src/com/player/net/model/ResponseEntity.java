@@ -5,17 +5,27 @@ import java.nio.charset.Charset;
 import com.player.common.StringUtil;
 import com.player.common.TDataUtil;
 import com.player.net.type.ServiceError;
+import com.player.net.type.ServiceType;
 import com.player.security.TCrypto;
 import com.player.util.TWebLogUtil;
 
 public class ResponseEntity {
+	public ServiceType serviceType = ServiceType.TaskService;
 	public String serviceCode = "";
+	public String responseBody = "";
 	public ResponseBean responseBean = null;
 	public ServiceError serviceError = ServiceError.Null;
 	
-	static public ResponseEntity parseResponseEntity(String responseSeq, ServiceError error, Class<? extends ResponseBean> responseCls) {
+	/**
+	 * @param responseSeq 服务返回报文
+	 * @param error 服务回调已知的错误
+	 * @responseCls 返回报文对应ResponseBean的类，当服务为交互式服务时可以为null
+	 */
+	static public ResponseEntity parseResponseEntity(String responseSeq, ServiceError error, Class<?> responseCls) {
 		ResponseBean responseBean = null;
 		String serviceCode = "";
+		String responseBody = "";
+		ServiceType serviceType = ServiceType.Null;
 		do{ //while false
 			if(error != null && error != ServiceError.Null) {
 				break;
@@ -25,6 +35,7 @@ public class ResponseEntity {
 				error = ServiceError.DecipherFailed;
 				break;
 			}
+			TWebLogUtil.d(plainResponse);
 			//将相应头和响应体拆开
 			StringBuilder typeBuilder = new StringBuilder();
 			StringBuilder codeBuilder = new StringBuilder();
@@ -47,17 +58,18 @@ public class ResponseEntity {
 					curBuilder.append(c);
 				}
 			}
-			int serviceType = 0, errorCode = 0;
+			int type = 0, errorCode = 0;
 			try{
-				serviceType = Integer.parseInt(typeBuilder.toString());
+				type = Integer.parseInt(typeBuilder.toString());
 				errorCode = Integer.parseInt(errorBuilder.toString());
 			}catch(NumberFormatException e) {
 				error = ServiceError.DeserializeFailed;
 				TWebLogUtil.d("服务返回头部格式不正确");
 				break;
 			}
+			serviceType = ServiceType.getServiceTypeByResult(type);
 			serviceCode = codeBuilder.toString();
-			if(StringUtil.emptyOrNull(serviceCode)) {
+			if(StringUtil.emptyOrNull(serviceCode) || serviceType == ServiceType.Null) {
 				error = ServiceError.DeserializeFailed;
 				TWebLogUtil.d("服务返回头部格式不正确");
 				break;
@@ -73,18 +85,18 @@ public class ResponseEntity {
 			if(error != ServiceError.Null) {
 				break;
 			}
-
-			responseBean = (ResponseBean)TDataUtil.deserialize(bodySeq, responseCls);
-			if(responseBean == null) {
-				error = ServiceError.DeserializeFailed;
-				break;
+			responseBody = bodySeq;
+			if(serviceType == ServiceType.TaskService) {
+				responseBean = (ResponseBean)TDataUtil.deserialize(bodySeq, responseCls);
 			}
 		}while(false);
 		
 		ResponseEntity entity = new ResponseEntity();
+		entity.serviceType = serviceType;
 		entity.serviceCode = serviceCode;
 		entity.serviceError = error;
 		entity.responseBean = responseBean;
+		entity.responseBody = responseBody;
 		return entity;
 	}
 }

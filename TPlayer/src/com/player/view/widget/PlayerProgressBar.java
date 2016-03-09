@@ -3,7 +3,7 @@
  * ÍøÕ¾:http://hi.baidu.com/mqlayer
  */
 
-package com.player.widget;
+package com.player.view.widget;
 
 import java.awt.event.MouseEvent;
 

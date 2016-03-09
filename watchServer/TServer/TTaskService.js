@@ -1,6 +1,7 @@
 const Events = require("events");
 const ServiceError = require("./ServiceError");
 const Util = require("util");
+const TLogUtil = require("../TCommon/util/TLogUtil");
 
 /**
  * Override #onReceive to deal with request
@@ -10,9 +11,7 @@ function TTaskService() {
 }
 Util.inherits(TTaskService, Events.EventEmitter);
 
-TTaskService.prototype.onReceive = function(requestBean, outputCallBack){
-    outputCallBack(null, ServiceError.Null);
-};
+TTaskService.onReceive = null;
 
 TTaskService.prototype.receive = function(requestBean) {
     var self = this;
@@ -28,6 +27,7 @@ TTaskService.prototype.receive = function(requestBean) {
                 self.emit("finish", responseBean, errorMessage);
             });
         } catch(e) {
+            TLogUtil.log(e);
             self.emit("finish", null, {result:ServiceError.ServerRuntimeError});
         }
     }

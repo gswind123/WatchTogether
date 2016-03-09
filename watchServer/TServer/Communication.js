@@ -1,8 +1,10 @@
-function Communication(userId, commService) {
-    this._id = "comm"+Date.now();
+const Generator = require("../TCommon/util/Generator");
+const TCrypto = require("../TCommon/security/TCrypto");
+
+function Communication(userId) {
+    this._id = Generator.generateId();
     this._userId = userId;
     this._lastUpdateTime = Date.now();
-    this._communicationService = commService;
 }
 
 Communication.prototype.updateConnection = function(connection) {
@@ -22,9 +24,20 @@ Communication.prototype.updateConnection = function(connection) {
 };
 
 Communication.prototype.receive = function(requestData) {
-    if(this._communicationService && this._communicationService.receive) {
-        this._communicationService.receive(requestData);
+    if(this.onReceive) {
+        this.onReceive(requestData);
     }
+};
+
+Communication.prototype.send = function(responseData) {
+    var self = this;
+    TCrypto.cipher(responseData, function(ciphered){
+        if(self._connection) {
+            try{
+                self._connection.send(ciphered);
+            }catch(e){}
+        }
+    });
 };
 
 module.exports = Communication;

@@ -1,5 +1,6 @@
 const Util = require("util");
 const TTaskService = require("../../TServer/TTaskService");
+const CreateLiveRequestBean = require("./model/CreateLiveRequestBean");
 const CreateLiveResponseBean = require("./model/CreateLiveResponseBean");
 const LiveHouseModel = require("../business/model/LiveHouseModel");
 const AudienceModel = require("../business/model/AudienceModel");
@@ -7,31 +8,39 @@ const AudienceManager = require("../business/AudienceManager");
 const LiveHouseManager = require("../business/LiveHouseManager");
 
 function CreateLiveService() {
-    TService.call(this);
+    TTaskService.call(this);
 }
 Util.inherits(CreateLiveService, TTaskService);
 
-CreateLiveService.prototype.onReceive = function(requestBean, outputCallBack) {
-    var responeBean = new CreateLiveResponseBean();
+CreateLiveService.prototype.onReceive = function(clientModel, outputCallBack) {
+    var responseBean = new CreateLiveResponseBean();
+    var requestBean = new CreateLiveRequestBean();
+    var errorMessage = requestBean.fillBean(clientModel);
     do{ //whie false
+        if(errorMessage) {
+            responseBean.result = 1;
+            responseBean.errorMessage = errorMessage;
+            break;
+        }
         var fileSig = requestBean.fileSignature;
         var liveName = requestBean.liveName;
         var uid = requestBean.localMac;
         if(!liveName) {
-            responeBean.result = 1;
-            responeBean.errorMessage = "直播名不能为空";
+            responseBean.result = 1;
+            responseBean.errorMessage = "直播名不能为空";
             break;
         }
         if(!fileSig) {
-            responeBean.result = 1;
-            responeBean.errorMessage = "直播文件不能为空";
+            responseBean.result = 1;
+            responseBean.errorMessage = "直播文件不能为空";
             break;
         }
         if(!uid) {
-            responeBean.result = 1;
-            responeBean.errorMessage = "主机名不能为空";
+            responseBean.result = 1;
+            responseBean.errorMessage = "主机名不能为空";
             break;
         }
+
         var audience = AudienceManager.getAudienceById(uid);
         var liveHouse = null;
         if(audience) {
@@ -53,9 +62,9 @@ CreateLiveService.prototype.onReceive = function(requestBean, outputCallBack) {
             liveHouse.addHost(audience);
             LiveHouseManager.registerLiveHouse(liveHouse);
         }
-        responeBean.liveId = liveHouse._id.toString();
+        responseBean.liveId = liveHouse._id.toString();
     }while(false);
-    outputCallBack(responeBean);
+    outputCallBack(responseBean);
 };
 
 module.exports = CreateLiveService;

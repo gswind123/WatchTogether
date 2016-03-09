@@ -40,9 +40,9 @@ import sun.swing.StringUIClientPropertyKey;
 import net.miginfocom.swing.MigLayout;
 
 import com.player.common.StringUtil;
-import com.player.live.TLiveWindow;
-import com.player.widget.PlayerProgressBar;
-import com.player.widget.VideoPanel;
+import com.player.view.TLiveWindow;
+import com.player.view.widget.PlayerProgressBar;
+import com.player.view.widget.VideoPanel;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

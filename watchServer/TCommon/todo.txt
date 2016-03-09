@@ -1,0 +1,1 @@
+TODO:Managers should have a super class to manager "Auto Clean Up":transverse the map periodically and remove dead objects

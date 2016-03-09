@@ -23,7 +23,7 @@ public class TWebServiceConnection extends TWebSocketConnection {
 	private volatile boolean mIsBusy = false;
 	private Timer mWaitTimer = new Timer(true);
 	private TimerTask mWaitTask = null;
-	private ConnectionCallBack mConnectionCallBack = null;
+	private TaskConnCallBack mConnectionCallBack = null;
 	
 	protected TWebServiceConnection(HttpClient client) {
 		super(client);
@@ -97,7 +97,7 @@ public class TWebServiceConnection extends TWebSocketConnection {
 		}
 	}
 		
-	public void setConnectionCallBack(ConnectionCallBack callback) {
+	public void setConnectionCallBack(TaskConnCallBack callback) {
 		mConnectionCallBack = callback;
 	}
 	

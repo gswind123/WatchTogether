@@ -1,4 +1,4 @@
-package com.player.live;
+package com.player.view;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -7,8 +7,8 @@ import java.awt.Rectangle;
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
 
-import com.player.widget.TListAdapter;
-import com.player.widget.TListView;
+import com.player.view.widget.TListAdapter;
+import com.player.view.widget.TListView;
 
 public class TLiveWindow {
 	private JFrame mRootView;

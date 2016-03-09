@@ -9,7 +9,7 @@ import sun.swing.StringUIClientPropertyKey;
 
 import com.player.common.StringUtil;
 import com.player.common.TDataUtil;
-import com.player.net.ConnectionCallBack;
+import com.player.net.TaskConnCallBack;
 import com.player.net.TConnectionPool;
 import com.player.net.TWebServiceConnection;
 import com.player.net.model.ResponseBean;
@@ -55,7 +55,7 @@ public class TSender {
 					return ;
 				}
 				addServiceTask(task);
-				connection.setConnectionCallBack(new ConnectionCallBack() {
+				connection.setConnectionCallBack(new TaskConnCallBack() {
 					@Override
 					public void onServiceBack(String responseMsg, ServiceError error) {
 						removeServiceTask(task.getId());
